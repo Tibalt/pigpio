@@ -3116,6 +3116,7 @@ static void waveRxSerial(wfRx_t *w, int level, uint32_t tick)
    int newWritePos;
 
    level = level ^ w->s.invert;
+    //printf("in: current bit is %d\n",w->s.bit);
 
    if (w->s.bit >= 0)
    {
@@ -3140,6 +3141,7 @@ static void waveRxSerial(wfRx_t *w, int level, uint32_t tick)
          ++(w->s.bit);
 
          w->s.nextBitDiff += w->s.fullBit;
+        //printf("doing:current bit is %d\n",w->s.bit);
       }
 
       if (w->s.bit > w->s.dataBits)
@@ -3179,6 +3181,7 @@ static void waveRxSerial(wfRx_t *w, int level, uint32_t tick)
          w->s.nextBitDiff  = w->s.halfBit;
       }
    }
+    //printf("out:current bit is %d\n",w->s.bit);
 }
 
 
@@ -3186,6 +3189,7 @@ static void waveRxSerial(wfRx_t *w, int level, uint32_t tick)
 
 static void waveRxBit(int gpio, int level, uint32_t tick)
 {
+   //printf("level = %d, tick=%u\n",level,tick);
    switch (wfRx[gpio].mode)
    {
       case PI_WFRX_SERIAL:
@@ -11102,6 +11106,7 @@ int gpioSerialRead(unsigned gpio, void *buf, size_t bufSize)
    if (w->s.readPos != w->s.writePos)
    {
       wpos = w->s.writePos;
+      printf("write pos:%d,read pos:%d\n",wpos,w->s.readPos);
 
       if (wpos > w->s.readPos) bytes = wpos - w->s.readPos;
       else                     bytes = w->s.bufSize - w->s.readPos;
@@ -11111,6 +11116,7 @@ int gpioSerialRead(unsigned gpio, void *buf, size_t bufSize)
       /* copy in multiples of the data size in bytes */
 
       bytes = (bytes / w->s.bytes) * w->s.bytes;
+      printf("bytes out:%d\n",bytes);
 
       if (buf) memcpy(buf, w->s.buf+w->s.readPos, bytes);
 

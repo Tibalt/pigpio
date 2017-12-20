@@ -11,6 +11,7 @@ compilation:gcc -lrt -lpthread -lpigpio main.c
 #include <pigpio.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 #define GPIO 4
 #define gpio 18
 
@@ -27,13 +28,13 @@ pulse[0].gpioOn = 0;
 pulse[0].gpioOff = (1<<gpio);
 pulse[0].usDelay = 833;
 
-pulse[1].gpioOn = 0;
-pulse[1].gpioOff = (1<<gpio);
+pulse[1].gpioOn =(1<<gpio);
+pulse[1].gpioOff = 0;
 pulse[1].usDelay = 833;
 
 
-pulse[2].gpioOn = 0;
-pulse[2].gpioOff = (1<<gpio);
+pulse[2].gpioOn =(1<<gpio);
+pulse[2].gpioOff = 0;
 pulse[2].usDelay = 833;
 
 
@@ -86,7 +87,8 @@ int wave_id = gpioWaveCreate();
 
 if (wave_id >= 0)
 {
-   gpioWaveTxSend(wave_id, PI_WAVE_MODE_ONE_SHOT);
+   //gpioWaveTxSend(wave_id, PI_WAVE_MODE_ONE_SHOT);
+  // gpioWaveTxSend(wave_id, PI_WAVE_MODE_REPEAT);
 
    // Transmit for 30 seconds.
 
@@ -130,25 +132,28 @@ int main()
     gpioStartThread(sendWave, NULL); 
 
     if(PI_OUTPUT != gpioGetMode(GPIO)){
-        printf("the mode of GPIO %d is not PI_PUTPUT\n",GPIO);
-        exit(-1);
+       printf("the mode of GPIO %d is not PI_OUTPUT\n",GPIO);
+       // exit(-1);
     }
 
 
 
     do{
-        char buf[32] = "";
-        r = gpioSerialRead(GPIO,buf,32);
+        char buf[512] = "";
+        r = gpioSerialRead(GPIO,buf,512);
+        int flag=r;
         if( r<0){
             printf("gpio %d serial read failed!\n",GPIO);
             exit(-1);
         }
         int i=0;
         while (r>0){ 
-            printf("0x%x ",*((unsigned short *)(&buf[(i++)*2])) );
+            printf("gpio serial read 0x%x ",*((unsigned short *)(&buf[(i++)*2])) );
             r=r-2;
         }
-        printf("\n");
+        if(flag>0)
+            printf("!\n");
+        //usleep(1000*200);
         sleep(1);
     }
     while(1);
