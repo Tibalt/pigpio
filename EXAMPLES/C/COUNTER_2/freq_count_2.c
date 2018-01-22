@@ -66,6 +66,9 @@ static int g_opt_p = OPT_P_DEF;
 static int g_opt_r = OPT_R_DEF;
 static int g_opt_s = OPT_S_DEF;
 static int g_opt_t = 0;
+static unsigned int tick=0;
+static unsigned long errcount=0;
+static unsigned long totalcount=0;
 
 void usage()
 {
@@ -158,6 +161,23 @@ void samples(const gpioSample_t *samples, int numSamples)
 
    for (s=0; s<numSamples; s++)
    {
+      totalcount++;
+      if(tick==0)
+      {
+        tick=samples[s].tick;
+      }
+      else
+      {
+        if(samples[s].tick-tick!=100)
+        {
+        // printf("error is happened,time interval=%u\n",samples[s].tick- tick);
+         errcount++;
+         float err=(float)errcount/(float)totalcount;
+         printf("time interval= %u,errcount= %u,totalcount= %u,error percent= %f\n",samples[s].tick- tick,errcount,totalcount,err);
+        }
+         tick=samples[s].tick;
+      }
+     // printf("level= %d,tick=%u\n", samples[s].level, samples[s].tick);
       level = samples[s].level;
       high = ((state ^ level) & g_mask) & level;
       state = level;
@@ -205,18 +225,19 @@ int main(int argc, char *argv[])
       g_opt_s, g_opt_r);
 
    gpioCfgClock(g_opt_s, 1, 1);
-
+   
    if (gpioInitialise()<0) return 1;
 
+   gpioSetMode(17, PI_OUTPUT);
    gpioWaveClear();
 
-   pulse[0].gpioOn  = g_mask;
+   pulse[0].gpioOn  = 1<<17;
    pulse[0].gpioOff = 0;
-   pulse[0].usDelay = g_opt_p;
+   pulse[0].usDelay =1;
 
    pulse[1].gpioOn  = 0;
-   pulse[1].gpioOff = g_mask;
-   pulse[1].usDelay = g_opt_p;
+   pulse[1].gpioOff = 1<<17;
+   pulse[1].usDelay =1 ;
 
    gpioWaveAddGeneric(2, pulse);
 
@@ -228,12 +249,15 @@ int main(int argc, char *argv[])
 
    mode = PI_INPUT;
 
-   if (g_opt_t)
-   {
-      gpioWaveTxSend(wave_id, PI_WAVE_MODE_REPEAT);
-      mode = PI_OUTPUT;
-   }
-
+   int result= gpioWaveTxSend(wave_id, PI_WAVE_MODE_REPEAT);
+   printf("WaveTXResult: %i\n", result);
+  // if (g_opt_t)
+  // {
+  //   int result= gpioWaveTxSend(wave_id, PI_WAVE_MODE_REPEAT);
+  //   mode = PI_OUTPUT;
+  //   printf("WaveTXResult: %i\n", result);
+  //}
+  // printf("mode is PI_INPUT\n");
    for (i=0; i<g_num_gpios; i++) gpioSetMode(g_gpio[i], mode);
 
    while (1)
@@ -244,10 +268,9 @@ int main(int argc, char *argv[])
 
       for (i=0; i<g_num_gpios; i++)
       {
-         printf(" %d=%d", g_gpio[i], count[i]);
+        // printf(" %d=%d", g_gpio[i], count[i]);
       }
-
-      printf("\n");
+    // printf("\n");
 
       gpioDelay(g_opt_r * 100000);
    }
@@ -255,3 +278,4 @@ int main(int argc, char *argv[])
    gpioTerminate();
 }
 
+  

@@ -11,3 +11,5 @@ __pycache__
 build
 dist
 *.egg-info
+EXAMPLES/C/COUNTER_2/a.out
+EXAMPLES/C/I2C_SNIFFER/a.out

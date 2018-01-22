@@ -22,22 +22,23 @@ void * sendWave(void *arg){
 // Construct and send a 30 microsecond square wave.
 
 gpioSetMode(gpio, PI_OUTPUT);
-gpioPulse_t pulse[10];
+gpioSetMode(17, PI_OUTPUT);
+gpioPulse_t pulse[3];
 
-pulse[0].gpioOn = 0;
-pulse[0].gpioOff = (1<<gpio);
-pulse[0].usDelay = 833;
+pulse[0].gpioOn =(1<<gpio);
+pulse[0].gpioOff = 0;
+pulse[0].usDelay = 1;
 
-pulse[1].gpioOn =(1<<gpio);
+pulse[1].gpioOn =(1<<gpio)|(1<<17);
 pulse[1].gpioOff = 0;
-pulse[1].usDelay = 833;
+pulse[1].usDelay = 5;
 
 
-pulse[2].gpioOn =(1<<gpio);
-pulse[2].gpioOff = 0;
-pulse[2].usDelay = 833;
+pulse[2].gpioOn =0;
+pulse[2].gpioOff =(1<<gpio)|(1<<17);
+pulse[2].usDelay = 5;
 
-
+/*
 pulse[3].gpioOn = 0;
 pulse[3].gpioOff = (1<<gpio);
 pulse[3].usDelay = 833;
@@ -71,7 +72,7 @@ pulse[8].usDelay = 833;
 pulse[9].gpioOn = (1<<gpio);
 pulse[9].gpioOff = 0;
 pulse[9].usDelay = 833;
-
+*/
 
 
 
@@ -81,18 +82,19 @@ sleep(2);
 
 gpioWaveAddNew();
 
-gpioWaveAddGeneric(10, pulse);
+gpioWaveAddGeneric(3, pulse);
 
 int wave_id = gpioWaveCreate();
 
 if (wave_id >= 0)
 {
    //gpioWaveTxSend(wave_id, PI_WAVE_MODE_ONE_SHOT);
-  // gpioWaveTxSend(wave_id, PI_WAVE_MODE_REPEAT);
+  int result= gpioWaveTxSend(wave_id, PI_WAVE_MODE_REPEAT);
+  printf("Result: %i\n", result);
 
    // Transmit for 30 seconds.
 
-   sleep(30);
+   sleep(120);
 
    gpioWaveTxStop();
 }
@@ -120,7 +122,8 @@ int main()
 
     gpioSetMode(gpio, PI_OUTPUT);
     gpioWrite(gpio,1); //pull up
-
+    gpioSetMode(17, PI_OUTPUT);
+    gpioWrite(17,1); //pull up
 
 
     int r = gpioSerialReadOpen(GPIO,1200,9);

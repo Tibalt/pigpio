@@ -162,6 +162,11 @@ int main(int argc, char * argv[])
    uint32_t level, changed, bI2C, bSCL, bSDA;
 
    gpioReport_t report;
+    printf("argc=%d\n",argc);
+    for(int i=0;i<argc;i++){
+        printf(" arg%d is %s",i,argv[i]);
+    }
+    printf("\n");
 
    if (argc > 2)
    {
@@ -200,6 +205,7 @@ int main(int argc, char * argv[])
          parse_I2C(SCL, SDA);
       }
    }
+   printf("end\n");
    return 0;
 }
 
